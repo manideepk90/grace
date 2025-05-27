@@ -18,7 +18,8 @@ Integration of the {{connector_name}} connector to Hyperswitch
 5. **Boilerplate Generation**: Use `add_connector.sh {{connector_name}} {{connector_base_url}}` to generate initial code
 6. **File Organization**: Move `crates/hyperswitch_connectors/src/connectors/{{connector_name}}/test.rs` to `crates/router/tests/connectors/{{connector_name}}.rs`
 7. **API Types**: Define connector-specific request/response types and conversions based on the connector's actual API
-8. **Implementation**: Complete all `todo!()` markers in the boilerplate code
+8. **Implementation**: Complete all `todo!()` markers in the boilerplate code [REMEMBER]
+9. Should not fix errors based on the rust compiler suggestions [REMEMBER]
 </project_rules>
 
 <reference_docs>
