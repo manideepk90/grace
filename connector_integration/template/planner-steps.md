@@ -11,6 +11,7 @@ First, carefully review the following inputs:
 <project_request>
 Integration of the {{connector_name}} connector to Hyperswitch
 </project_request>
+
 <project_rules>
 1. **Type Safety**: Use `types.rs` in `hyperswitch_domain_models` for type definitions
 2. **Code Standards**: Follow existing connector patterns and maintain consistent code standards
@@ -24,16 +25,22 @@ Integration of the {{connector_name}} connector to Hyperswitch
 8. **Implementation**: Complete all `todo!()` markers in the boilerplate code
 </project_rules>
 
-### Reference Documentation
+<reference_docs>
 | Document | Purpose |
-|----------|---------|
-| `grace/references/types.md` | Type definitions and data structures |
-| `grace/references/integrations.md` | Connector implementation patterns |
-| `grace/references/learning.md` | Lessons from previous integrations |
-| `grace/references/patterns.md` | Common implementation patterns |
-| `grace/references/errors.md` | Error handling strategies |
-| `grace/references/{{connector_name}}_doc.md` | Connector-specific API documentation |
+| `grace/guides/types/types.md` | Type definitions and data structures |
+| `grace/guides/integrations/integrations.md` | Connector implementation patterns |
+| `grace/guides/learning/learning.md` | Lessons from previous integrations |
+| `grace/guides/patterns/patterns.md` | Common implementation patterns |
+| `grace/guides/errors/errors.md` | Error handling strategies |
+</reference_docs>
+
+<connector_information>
+| Document | Purpose |
+| `grace/references/{{connector_name}}_doc_*.md` | Connector-specific API documentation |
+</connector_information>
+
 <technical_specification>
+| Document | Purpose |
 | `grace/connector_integration/{{connector_name}}_specs.md` | Technical specifications |
 </technical_specification>
 
