@@ -49,7 +49,7 @@ Integration of the {{connector_name}} connector to Hyperswitch
 
 <technical_specification>
 | Document | Purpose |
-| `grace/connector_integration/{{connector_name}}_specs.md` | Technical specifications |
+| `grace/connector_integration/{{connector_name}}/{{connector_name}}_specs.md` | Technical specifications |
 </technical_specification>
 
 <starter_template>

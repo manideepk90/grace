@@ -355,7 +355,7 @@ Example
 </connector_information>
 
 <output_file>
-Store the result or plan in the grace/connector_integration/{{connector_name}}_specs.md
+Store the result or plan in the grace/connector_integration/{{connector_name}}/{{connector_name}}_specs.md
 </output_file>
 
 Finally, carefully review the starter template:

@@ -115,7 +115,7 @@ update_metadata_flow
 
 ### Preparation
 [IMPORTANT]
-[This step can be ignored if already created eg. if grace/connector_integration/{{connector_name}}_plan.md & grace/connector_integration/{{connector_name}}_specs.md is already created, this step can be skipped]
+[This step can be ignored if already created eg. if grace/connector_integration/{{connector_name}}_plan.md & grace/connector_integration/{{connector_name}}/{{connector_name}}_specs.md is already created, this step can be skipped]
 
 
 [IMPORTANT]

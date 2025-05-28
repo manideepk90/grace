@@ -4,7 +4,7 @@
 
 ### Phase 1: Planning and Specification
 - [x] **Moved .clinerules to root directory** - Completed as per .gracerules initial step
-- [x] **Created Technical Specification** - `grace/connector_integration/monei_specs.md`
+- [x] **Created Technical Specification** - `grace/connector_integration/monei/monei_specs.md`
   - Documented all API endpoints and authentication
   - Defined request/response structures
   - Mapped status and error codes
@@ -54,7 +54,7 @@
 
 ## Reference Documents
 - **API Documentation**: [Monei API Docs](https://docs.monei.com/)
-- **Integration Spec**: `grace/connector_integration/monei_specs.md`
+- **Integration Spec**: `grace/connector_integration/monei/monei_specs.md`
 - **Implementation Plan**: `grace/connector_integration/monei_plan.md`
 - **Original Reference**: `grace/references/MONEI Integration Documentation.markdown`
 
