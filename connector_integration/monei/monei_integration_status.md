@@ -9,7 +9,7 @@
   - Defined request/response structures
   - Mapped status and error codes
   - Specified implementation details
-- [x] **Created Implementation Plan** - `grace/connector_integration/monei_plan.md`
+- [x] **Created Implementation Plan** - `grace/connector_integration/monei/monei_plan.md`
   - 33 detailed implementation steps
   - Organized into 12 phases
   - Clear dependencies and user instructions
@@ -56,7 +56,7 @@
 - **API Documentation**: [Monei API Docs](https://docs.monei.com/)
 - **Integration Spec**: `grace/connector_integration/monei/monei_specs.md`
 - **Implementation Plan**: `grace/connector_integration/monei_plan.md`
-- **Original Reference**: `grace/references/MONEI Integration Documentation.markdown`
+- **Original Reference**: `grace/references/monei_integration-documentation.md`
 
 ## Status: Ready for Implementation
 All planning documents have been created. The implementation can now proceed following the detailed plan.

@@ -66,7 +66,7 @@ crates/router/tests/connectors/
 </starter_template>
 
 <output_file>
-Store the completed plan in: `grace/connector_integration/{{connector_name}}_plan.md`
+Store the completed plan in: `grace/connector_integration/{{connector_name}}/{{connector_name}}_plan.md`
 <output_file>
 
 After reviewing these inputs, your task is to create a comprehensive, detailed plan for implementing the web application.

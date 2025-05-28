@@ -1,4 +1,4 @@
-# MONEI Integration Documentation
+# Monei Integration Documentation
 
 We are integrating **MONEI** into **Hyperswitch** – an open-source payment orchestrator. This documentation provides complete technical details for integrating MONEI’s Payments API with Hyperswitch, focusing exclusively on card payments. It covers API flows, request/response structures, URLs, and authentication details based on the provided MONEI API information.
 

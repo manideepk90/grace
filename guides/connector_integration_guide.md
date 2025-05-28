@@ -115,7 +115,7 @@ update_metadata_flow
 
 ### Preparation
 [IMPORTANT]
-[This step can be ignored if already created eg. if grace/connector_integration/{{connector_name}}_plan.md & grace/connector_integration/{{connector_name}}/{{connector_name}}_specs.md is already created, this step can be skipped]
+[This step can be ignored if already created eg. if grace/connector_integration/{{connector_name}}/{{connector_name}}_plan.md & grace/connector_integration/{{connector_name}}/{{connector_name}}_specs.md is already created, this step can be skipped]
 
 
 [IMPORTANT]
@@ -123,8 +123,8 @@ you have to add all the mandatory and required fields from the reference docs !!
 Do not miss any thing and do not include any headers structs
 
 First use the  grace/connector_integration/template/tech_spec.md and execute it
-post completion use the  grace/connector_integration/template/planner-steps.md and execute it.
+post completion use the  grace/connector_integration/template/planner_steps.md and execute it.
 
 ASK USER TO PROCEED WITH THE PLAN [WAIT FOR RESPONSE]
 
-then follow the implemented plan in the grace/connector_integration/{{connector_name}}_plan.md
+then follow the implemented plan in the grace/connector_integration/{{connector_name}}/{{connector_name}}_plan.md
