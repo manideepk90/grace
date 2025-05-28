@@ -5,7 +5,7 @@ We are integrating **MONEI** into **Hyperswitch** – an open-source payment orc
 ## Connector URLs
 
 **Urls**
-- **baseUrl**: `https://api.monei.com/v1` (Production Base URL for MONEI Payments API)
+- **baseUrl**: `https://api.monei.com` (Production Base URL for MONEI Payments API)
 - **sandboxUrl**: Not explicitly provided in the documentation. MONEI supports a test mode (indicated by `livemode: false` in responses), which uses the same base URL. Sandbox access requires a test API key configured via the MONEI dashboard.
 - **Other Important URLs**:
   - **connect_url**: Not applicable. MONEI does not require a specific account connection URL; configuration is done via the MONEI dashboard using an API key.
