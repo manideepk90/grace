@@ -13,14 +13,18 @@ Never reset this folder
 
 Structure:
 guides /
-connector_integration_guide.md - Contains step-by-step integration process
+connector_integration_guide.md - Contains step-by-step integration process. [MUST FOLLOW FOR CONNECTOR INTEGRATION]
 patterns/patterns.md - Contains common reusable patterns and solutions
 errors/errors.md - Contains common errors and solutions encountered during implementations
-learning/learning.md - Contains lessons learned from previous implementations
+learnings/learnings.md - Contains lessons learned from previous implementations
 types/types.md - Contains all types used in the connector
 integrations/integrations.md - previous integrations knowledge - optional
 
-[Update all the files based on learnings during the integration process similar to memory bank]
+[MUST READ ALL THE FILES FIRST]
 
-[initial step ignore if already exist in root of the project]
+[Update all the files based on learnings during the integration process]
+
+[Initial step ignore if already exist in root of the project] [MUST]
 move .clinerules to root of the project
+
+[FOR CYPRESS TEST, ALWAYS CHECK WITH plan and specs doc in the integrations.]

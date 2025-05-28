@@ -123,5 +123,8 @@ you have to add all the mandatory and required fields from the reference docs !!
 Do not miss any thing and do not include any headers structs
 
 First use the  grace/connector_integration/template/tech_spec.md and execute it
-post completion use the  grace/connector_integration/template/planner-steps.md and execute it
+post completion use the  grace/connector_integration/template/planner-steps.md and execute it.
+
+ASK USER TO PROCEED WITH THE PLAN [WAIT FOR RESPONSE]
+
 then follow the implemented plan in the grace/connector_integration/{{connector_name}}_plan.md

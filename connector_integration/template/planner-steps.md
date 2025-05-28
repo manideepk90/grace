@@ -25,6 +25,12 @@ Integration of the {{connector_name}} connector to Hyperswitch
 8. **Implementation**: Complete all `todo!()` markers in the boilerplate code
 9. Should not fix errors based on the rust compiler suggestions [REMEMBER]
 10. Fix errors from the reference docs [REMEMBER]
+11. Always use cargo build in root folder. rather than using cargo build in other folder.
+12. After every phase it has to do cargo build/check and fix the errors.
+13. For Testing, create the cypress test as the other connector in the repo for the implemented flows.
+14. For Fixing issues of rust, follow the types.md, errors.md then rust suggestion. [MUST]
+15. After every step update the doc and mark as done if completed [MUST REMEMBER]
+16. Always Follow full request/response struct from the {{connector_name}} doc. don't modify the payloads.
 </project_rules>
 
 <reference_docs>
