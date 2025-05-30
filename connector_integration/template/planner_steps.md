@@ -52,6 +52,11 @@ Integration of the {{connector_name}} connector to Hyperswitch
 | `grace/connector_integration/{{connector_name}}/{{connector_name}}_specs.md` | Technical specifications |
 </technical_specification>
 
+<code_review>
+[MUST]
+After implementing each phase it has to use the code-review.md prompt and execute aganist generated file and follow the plan based on user permission
+</code_review>
+
 <starter_template>
 After running `add_connector.sh`, the following structure will be created:
 ```

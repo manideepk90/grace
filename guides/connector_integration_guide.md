@@ -127,4 +127,9 @@ post completion use the  grace/connector_integration/template/planner_steps.md a
 
 ASK USER TO PROCEED WITH THE PLAN [WAIT FOR RESPONSE]
 
-then follow the implemented plan in the grace/connector_integration/{{connector_name}}/{{connector_name}}_plan.md
+then follow the implemented plan in the grace/connector_integration/{{connector_name}}_plan.md
+
+[REMEMBER]
+when user say to review, then use the code-review.md and execute it.
+ASK USER TO PROCEED WITH THE PLAN [WAIT FOR RESPONSE]
+The follow the optimation plan.
