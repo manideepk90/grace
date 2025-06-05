@@ -12,7 +12,7 @@ First, carefully review the following inputs:
 Integration of the {{connector_name}} connector to Hyperswitch
 </project_request>
 
-<project_rules>
+<project_rules> [MUST FOLLOW]
 1. **Type Safety**: Use `types.rs` in `hyperswitch_domain_models` for type definitions
 2. **Code Standards**: Follow existing connector patterns and maintain consistent code standards
 3. **No Assumptions**: Do not assume implementation details; refer to documentation
