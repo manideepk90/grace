@@ -13,6 +13,10 @@
   - `hyperswitch_domain_models::types` for domain types
   - `api_models` is separate crate, not in `hyperswitch_interfaces`
   - `common_utils::id_type` not `hyperswitch_domain_models::id_type`
+  - Missing import: `base64::Engine` for base64 encoding operations
+  - Missing import: `crate::utils::ExtTraits` for extended trait functionality
+  - Missing import: `crate::utils::RefundsRequestData` for refund operations
+  - Use `RouterData` from `hyperswitch_domain_models::router_data::RouterData`, not from other modules
 
 ### E0405/E0412: Type/Trait Not Found
 **Pattern:** `cannot find type/trait X in scope`
@@ -39,6 +43,7 @@
 - Parse methods: `use common_utils::ext_traits::ByteSliceExt`
 - String masking: `use masking::PeekInterface` (use `peek()` not `expose()` on references)
 - Amount methods: `get_amount_as_i64()` on MinorUnit/StringMinorUnit
+- Incorrect function name: Use `get_ip_address_as_optional()` not `get_optional_ip()`
 
 ### E0609: Field Not Found
 **Pattern:** `no field X on type Y`
