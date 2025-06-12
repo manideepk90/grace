@@ -2,6 +2,8 @@
 
 This guide provides a reusable, step-by-step process for accurately adding a new payment connector to the Hyperswitch system. It synthesizes information from the "Hyperswitch Connector Integration Assistant" and the general "Connector Integration Process".
 
+> **Important:** Before integrating a new connector, you should review existing connector implementations to understand the patterns and approach. Examining already implemented connectors provides valuable examples of how different flows are handled.
+
 Memorize the below types and import accordingly
 ```
 // Std / Built-in
@@ -83,7 +85,7 @@ use crate::{
         PaymentsAuthorizeRequestData, PaymentsCompleteAuthorizeRequestData,
         PaymentsPostSessionTokensRequestData, PaymentsPreProcessingRequestData,
         PaymentsSetupMandateRequestData, PaymentsSyncRequestData, RouterData as _,
-        RouterData as OtherRouterData,
+        RouterData as OtherRouterData, RefundsRequestData, ExtTraits,
     },
 };
 ```
@@ -128,3 +130,42 @@ post completion use the  grace/connector_integration/template/planner_steps.md a
 ASK USER TO PROCEED WITH THE PLAN [WAIT FOR RESPONSE]
 
 then follow the implemented plan in the grace/connector_integration/{{connector_name}}/{{connector_name}}_plan.md
+
+## Common Issues to Avoid
+
+1. Incorrect type for Cancel - Use `PaymentsCancelData` for cancel operations, not `PaymentsCaptureData`.
+
+2. Incorrect imports: 
+   - Use `RouterData` from `hyperswitch_domain_models::router_data::RouterData`
+   - Import `base64::Engine` for base64 encoding operations
+   - Use `crate::utils::ExtTraits` for extended trait functionality
+   - Use `crate::utils::RefundsRequestData` for refund operations
+
+3. Missing default implementations for ConnectorIntegration for all the connector flows:
+   - `PaymentReject`
+   - `PaymentApprove` 
+   - `PaymentAuthorizeSessionToken`
+
+4. Missing context of AmountConvertor - Be careful with `MinorUnit` vs `StringMajorUnit` conversions
+
+5. Type mismatch while instantiating the struct for CardNumber (CardNumber in HS vs Secret<String> for connector)
+
+6. Incorrect function name - Use `get_ip_address_as_optional()` not `get_optional_ip()`
+
+7. Incorrect field name for customer_id - Use `customer_id` not `connector_customer`
+
+8. Missing connector from the Connectors struct list (for specifying the base_url)
+
+9. Outdated ErrorResponse examples - Make sure to include all fields:
+   ```rust
+   ErrorResponse {
+       pub code: String,
+       pub message: String,
+       pub reason: Option<String>,
+       pub status_code: u16,
+       pub attempt_status: Option<common_enums::enums::AttemptStatus>,
+       pub connector_transaction_id: Option<String>,
+       pub network_decline_code: Option<String>,
+       pub network_advice_code: Option<String>,
+       pub network_error_message: Option<String>,
+   }

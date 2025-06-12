@@ -128,6 +128,13 @@ let request_str = serde_json::to_string(&connector_req)?;
 let request_content = RequestContent::Json(Box::new(connector_req));
 ```
 
+### Required ConnectorIntegration Implementations
+
+Don't forget to implement these connector flows if applicable:
+- `PaymentReject`
+- `PaymentApprove`
+- `PaymentAuthorizeSessionToken`
+
 ### Empty Request Bodies
 ```rust
 // GET requests: Don't call set_body()
@@ -183,6 +190,10 @@ last_name: if parts.len() > 1 {
     None
 }.unwrap_or_else(|| Secret::new("".to_string())),
 ```
+
+### Field and Method Names
+- Use `customer_id` not `connector_customer`
+- Use `get_ip_address_as_optional()` not `get_optional_ip()`
 
 ### JSON to HashMap<String, String>
 ```rust

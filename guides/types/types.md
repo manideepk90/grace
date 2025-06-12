@@ -46,6 +46,9 @@ utils::get_amount_as_f64(currency_unit, amount, currency)
 StringMinorUnit::from(amount_i64)
 ```
 
+**AmountConvertor Context**:
+Be careful with MinorUnit vs StringMajorUnit conversions and make sure you understand the context of AmountConvertor.
+
 ## Common Request Transformations
 
 ### Payment Request Structure
@@ -66,6 +69,16 @@ pub struct ConnectorPaymentsRequest {
 }
 ```
 
+### Cancel Request Structure
+```rust
+pub struct ConnectorCancelRequest {
+    // Use PaymentsCancelData, not PaymentsCaptureData for cancel operations
+    transaction_id: String, // connector_transaction_id
+    cancellation_reason: Option<String>,
+    // Connector-specific fields
+}
+```
+
 ### Payment Method Types
 ```rust
 pub enum PaymentMethodDetails {
@@ -81,13 +94,15 @@ pub enum PaymentMethodDetails {
 **Card Details**:
 ```rust
 pub struct CardDetails {
-    number: cards::CardNumber,
+    number: cards::CardNumber, // Hyperswitch type
     expiry_month: Secret<String>,
     expiry_year: Secret<String>,
     cvc: Secret<String>,
     card_holder_name: Secret<String>,
 }
 ```
+
+**Type mismatch**: Hyperswitch uses CardNumber but many connectors expect Secret<String>
 
 **Wallet Types**:
 - GooglePay → Base64 token or structured data
@@ -275,6 +290,19 @@ pub struct ConnectorErrorResponse {
     reason: Option<String>,
 }
 
+// Current ErrorResponse struct
+pub struct ErrorResponse {
+    pub code: String,
+    pub message: String,
+    pub reason: Option<String>,
+    pub status_code: u16,
+    pub attempt_status: Option<common_enums::enums::AttemptStatus>,
+    pub connector_transaction_id: Option<String>,
+    pub network_decline_code: Option<String>,
+    pub network_advice_code: Option<String>,
+    pub network_error_message: Option<String>,
+}
+
 // Transform to Hyperswitch ErrorResponse
 ErrorResponse {
     status_code: res.status_code,
@@ -282,6 +310,10 @@ ErrorResponse {
     message: error.message.clone(),
     reason: error.reason,
     attempt_status: Some(AttemptStatus::Failure),
+    connector_transaction_id: None,
+    network_decline_code: None,
+    network_advice_code: None,
+    network_error_message: None,
 }
 ```
 
