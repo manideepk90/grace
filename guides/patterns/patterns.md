@@ -130,7 +130,7 @@ let request_content = RequestContent::Json(Box::new(connector_req));
 
 ### Required ConnectorIntegration Implementations
 
-Don't forget to implement these connector flows:
+Don't forget to implement these connector flows if applicable:
 - `PaymentReject`
 - `PaymentApprove`
 - `PaymentAuthorizeSessionToken`
