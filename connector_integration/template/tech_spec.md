@@ -37,7 +37,6 @@ Integration of the {{connector_name}} connector to Hyperswitch
 | `grace/guides/patterns/patterns.md` | Common implementation patterns |
 | `grace/guides/errors/errors.md` | Error handling strategies |
 
-<|>
 ### ConnectorCommon
 Contains common description of the connector, like the base endpoint, content-type, error response handling, id, currency unit.
 
