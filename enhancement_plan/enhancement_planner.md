@@ -9,32 +9,74 @@ Please review the following context and implementation:
 
 <project_request>
 {{PROJECT_REQUEST}}
+- File: User input or `grace/connector_integration/{{connector_name}}/project_request.md`
 </project_request>
 
 <project_rules>
 {{PROJECT_RULES}}
+- File: `grace/connector_integration/template/planner_steps.md` (project rules section)
+- File: `grace/.clinerules` (Cline-specific rules)
+- File: `grace/.gracerules` (Grace project rules)
 </project_rules>
 
 <technical_specification>
 {{TECHNICAL_SPECIFICATION}}
+- File: `grace/connector_integration/{{connector_name}}/{{connector_name}}_specs.md`
+- File: `grace/connector_integration/template/tech_spec.md` (template)
 </technical_specification>
 
 <implementation_plan>
 {{IMPLEMENTATION_PLAN}}
+- File: `grace/connector_integration/{{connector_name}}/{{connector_name}}_plan.md`
 </implementation_plan>
 
 <existing_code>
 {{EXISTING_CODE}}
+- Files: All implemented connector code files
+- Primary: `crates/hyperswitch_connectors/src/connectors/{{connector_name}}.rs`
+- Primary: `crates/hyperswitch_connectors/src/connectors/{{connector_name}}/transformers.rs`
+- Secondary: `crates/router/tests/connectors/{{connector_name}}.rs`
+- Supporting: `crates/hyperswitch_domain_models/src/types.rs` (if modified)
+- Supporting: Any other modified Hyperswitch codebase files
 </existing_code>
 
 <reference_documentation>
 Refer to the following Hyperswitch-specific documentation for context:
+
+## Core Guide Documentation
 - `grace/guides/types/types.md` - Type definitions and data structures
 - `grace/guides/integrations/integrations.md` - Connector implementation patterns  
 - `grace/guides/learnings/learnings.md` - Lessons from previous integrations
 - `grace/guides/patterns/patterns.md` - Common implementation patterns
 - `grace/guides/errors/errors.md` - Error handling strategies
+- `grace/guides/connector_integration_guide.md` - Main connector integration guide
+
+## Project Configuration Files
+- `grace/.clinerules` - Cline-specific rules and guidelines
+- `grace/.gracerules` - Grace project rules and conventions
+- `grace/README.md` - Project overview and setup instructions
+
+## Connector Integration Templates
+- `grace/connector_integration/template/planner_steps.md` - Step planning template
+- `grace/connector_integration/template/tech_spec.md` - Technical specification template
+- `grace/connector_integration/{{connector_name}}/{{connector_name}}_specs.md` - Connector-specific technical specifications
+- `grace/connector_integration/{{connector_name}}/{{connector_name}}_plan.md` - Implementation plan for the connector
+
+## Enhancement Planning
+- `grace/enhancement_plan/enhancement_planner.md` - This enhancement planner template
+
+## Connector-Specific Documentation
 - `grace/references/{{connector_name}}_doc_*.md` - Connector-specific API documentation
+- `grace/connector_integration/{{connector_name}}/` - Connector-specific implementation files and documentation
+
+## Hyperswitch Codebase Files (for reference during optimization)
+- `crates/hyperswitch_connectors/src/connectors/{{connector_name}}.rs` - Main connector implementation
+- `crates/hyperswitch_connectors/src/connectors/{{connector_name}}/transformers.rs` - Request/response transformations
+- `crates/router/tests/connectors/{{connector_name}}.rs` - Integration tests
+- `crates/hyperswitch_domain_models/src/types.rs` - Domain type definitions
+- `crates/router/src/connector/` - Router integration files
+- `crates/router/src/` - Core router implementation files
+- `crates/hyperswitch_connectors/src/` - Connector framework files
 </reference_documentation>
 
 First, analyze the implemented connector code against the original requirements and plan. Consider the following areas:
