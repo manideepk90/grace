@@ -326,6 +326,148 @@ pub enum Status {
 }
 ```
 
+## Connector-Specific Auth Patterns
+
+### MPGS Basic Auth Pattern
+```rust
+// MPGS uses Basic Auth with merchant ID embedded in the API key
+// Format: "merchant.{merchantId}:{password}"
+fn get_auth_header(&self, auth_type: &ConnectorAuthType) -> CustomResult<Vec<(String, masking::Maskable<String>)>, errors::ConnectorError> {
+    let auth = mpgs::MpgsAuthType::try_from(auth_type)
+        .change_context(errors::ConnectorError::FailedToObtainAuthType)?;
+    
+    // MPGS API key contains both merchant ID and password
+    let encoded = common_utils::consts::BASE64_ENGINE.encode(auth.api_key.expose());
+    
+    Ok(vec![(
+        headers::AUTHORIZATION.to_string(),
+        format!("Basic {}", encoded).into_masked(),
+    )])
+}
+
+// Extract merchant ID from auth key
+let merchant_id = auth.api_key.expose()
+    .strip_prefix("merchant.")
+    .ok_or(errors::ConnectorError::InvalidConnectorConfig { 
+        config: "Invalid merchant ID format. Expected: merchant.{merchantId}".to_string() 
+    })?;
+```
+
+## URL Building Patterns
+
+### MPGS URL Pattern (Unique Transaction IDs)
+```rust
+// MPGS requires unique transaction IDs for each operation
+fn get_payment_url(
+    auth_type: &ConnectorAuthType,
+    payment_id: &str,
+    capture_method: Option<CaptureMethod>,
+) -> Result<String, error_stack::Report<errors::ConnectorError>> {
+    let auth = MpgsAuthType::try_from(auth_type)?;
+    let merchant_id = extract_merchant_id(&auth)?;
+    
+    // Generate unique transaction ID
+    let transaction_id = format!("txn_{}", uuid::Uuid::new_v4());
+    
+    // Determine operation type
+    let operation = match capture_method {
+        Some(CaptureMethod::Automatic) | None => "pay",
+        Some(CaptureMethod::Manual) => "authorize",
+        _ => "pay",
+    };
+    
+    Ok(format!(
+        "/api/rest/version/73/merchant/{}/order/{}/transaction/{}?operation={}",
+        merchant_id, payment_id, transaction_id, operation
+    ))
+}
+```
+
+## Request Structure Patterns
+
+### MPGS Nested Request Structure
+```rust
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MpgsPaymentsRequest {
+    api_operation: MpgsApiOperation,  // Determines flow type
+    order: MpgsOrder,
+    source_of_funds: MpgsSourceOfFunds,
+    transaction: MpgsTransaction,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    customer: Option<MpgsCustomer>,
+}
+
+// Enum for API operations
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum MpgsApiOperation {
+    Pay,        // Automatic capture
+    Authorize,  // Manual capture
+    Capture,
+    Void,
+    Refund,
+    Verify,
+}
+```
+
+## Response Handling Patterns
+
+### MPGS Multi-Field Status Mapping
+```rust
+// MPGS requires checking both 'result' and 'response.gateway_code'
+let status = match (item.response.result.as_str(), item.response.response.gateway_code.as_str()) {
+    ("SUCCESS", "APPROVED") => {
+        match item.response.transaction.transaction_type.as_str() {
+            "AUTHORIZATION" => common_enums::AttemptStatus::Authorized,
+            "PAYMENT" | "CAPTURE" => common_enums::AttemptStatus::Charged,
+            "VOID" => common_enums::AttemptStatus::Voided,
+            _ => common_enums::AttemptStatus::Pending,
+        }
+    },
+    ("PENDING", _) => common_enums::AttemptStatus::Pending,
+    (_, "AUTHENTICATION_REQUIRED") => common_enums::AttemptStatus::AuthenticationPending,
+    _ => common_enums::AttemptStatus::Failure,
+};
+```
+
+## Error Response Patterns
+
+### MPGS Nested Error Structure
+```rust
+#[derive(Debug, Serialize, Deserialize)]
+pub struct MpgsErrorResponse {
+    pub error: MpgsError,  // Nested error object
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct MpgsError {
+    pub cause: String,
+    pub explanation: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub field: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub validation_error: Option<String>,
+}
+
+// Error response transformation
+fn build_error_response(&self, res: Response, event_builder: Option<&mut ConnectorEvent>) -> CustomResult<ErrorResponse, errors::ConnectorError> {
+    let response: mpgs::MpgsErrorResponse = res.response.parse_struct("MpgsErrorResponse")?;
+    
+    Ok(ErrorResponse {
+        status_code: res.status_code,
+        code: response.error.cause.clone(),
+        message: response.error.explanation.clone(),
+        reason: response.error.field.clone(),
+        attempt_status: None,
+        connector_transaction_id: None,
+        network_advice_code: None,
+        network_decline_code: None,
+        network_error_message: response.error.validation_error,
+    })
+}
+```
+
 ## Key Principles
 
 1. **Use Local Wrappers**: Always use `crate::types::ResponseRouterData` for TryFrom to avoid orphan rule
@@ -335,3 +477,6 @@ pub enum Status {
 5. **Clear Error Messages**: Always provide context in errors
 6. **Type Safety**: Use appropriate types (Secret, Email, etc.)
 7. **Consistent Patterns**: Follow established patterns from other connectors
+8. **Unique Transaction IDs**: Some APIs (like MPGS) require unique IDs per operation
+9. **Nested Response Handling**: Check for nested error/status structures
+10. **Multi-Field Status Logic**: Some APIs require checking multiple fields for status

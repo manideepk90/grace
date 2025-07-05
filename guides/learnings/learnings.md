@@ -439,6 +439,51 @@ impl ConnectorIntegration<AccessTokenAuth, AccessTokenRequestData, AccessToken> 
 }
 ```
 
+## Connector-Specific Lessons
+
+### MPGS (Mastercard Payment Gateway Services)
+```rust
+// Authentication: Basic Auth with special format
+// Format: merchant.{merchantId}:{password}
+let auth_key = "merchant.TEST_MERCHANT:password123";
+let encoded = base64::engine::general_purpose::STANDARD.encode(auth_key.as_bytes());
+
+// URL Building Pattern with merchant ID extraction
+fn get_payment_url(auth_type: &ConnectorAuthType, payment_id: &str, capture_method: Option<CaptureMethod>) 
+    -> Result<String, errors::ConnectorError> {
+    let auth = MpgsAuthType::try_from(auth_type)?;
+    
+    // Extract merchant ID from auth key
+    let merchant_id = auth.api_key.expose()
+        .strip_prefix("merchant.")
+        .ok_or(errors::ConnectorError::InvalidConnectorConfig { 
+            config: "Invalid merchant ID format. Expected: merchant.{merchantId}".to_string() 
+        })?;
+    
+    // Generate unique transaction ID for each operation
+    let transaction_id = format!("txn_{}", uuid::Uuid::new_v4());
+    
+    // Determine operation based on capture method
+    let operation = match capture_method {
+        Some(CaptureMethod::Automatic) | None => "pay",
+        Some(CaptureMethod::Manual) => "authorize",
+        _ => "pay",
+    };
+    
+    Ok(format!(
+        "/api/rest/version/73/merchant/{}/order/{}/transaction/{}?operation={}",
+        merchant_id, payment_id, transaction_id, operation
+    ))
+}
+
+// Key Learnings:
+1. API Operation field determines payment flow (PAY vs AUTHORIZE)
+2. Each operation requires a unique transaction ID
+3. Amount format: String with exactly 2 decimal places
+4. Nested error response structure (error.cause, error.explanation)
+5. Status mapping requires checking both 'result' and 'response.gateway_code'
+```
+
 ## Quick Reference Checklist
 
 ### When Starting a New Connector
@@ -452,6 +497,8 @@ impl ConnectorIntegration<AccessTokenAuth, AccessTokenRequestData, AccessToken> 
 8. ✓ Check for two-step flows (create intent → confirm)
 9. ✓ Verify 3DS requirements
 10. ✓ Check refund/void endpoint patterns
+11. ✓ Check if API requires unique transaction IDs per operation
+12. ✓ Verify special auth formats (e.g., MPGS: merchant.{id}:password)
 
 ### Common Fixes
 - **Import errors**: Use full module paths or correct aliases
