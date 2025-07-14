@@ -1,0 +1,335 @@
+title: Connector Type Mappings - Summary Guide
+overview:
+  description: This guide summarizes type transformations between Hyperswitch's generic payment models and connector-specific formats. Each connector follows a similar pattern but with unique requirements.
+core_type_transformation_pattern:
+  - title: Router Data Wrapper
+    description: Every connector uses a wrapper type to pair Hyperswitch data with formatted amounts
+    code: |
+      pub struct ConnectorRouterData<T> {
+          pub amount: AmountType, // MinorUnit, StringMinorUnit, f64, etc.
+          pub router_data: T,
+      }
+  - title: Authentication Types
+    code: |
+      // Common patterns
+      pub struct ConnectorAuthType {
+          pub api_key: Secret<String>,
+          pub merchant_id: Secret<String>,  // or merchant_account, entity_id
+          pub api_secret: Secret<String>,   // optional for some
+      }
+    auth_type_mappings:
+      - "ConnectorAuthType::HeaderKey → API key in headers"
+      - "ConnectorAuthType::BodyKey → Multiple credentials"
+      - "ConnectorAuthType::SignatureKey → HMAC/signature-based auth"
+  - title: Amount Types
+    description: Different connectors expect different amount formats
+    formats:
+      - "Minor Units (cents): `MinorUnit`, `StringMinorUnit`"
+      - "Major Units (dollars): `StringMajorUnit`, `FloatMajorUnit`, `f64`"
+      - "String Format: Some APIs require amounts as strings"
+    conversion_functions:
+      code: |
+        // Minor to Major
+        utils::to_currency_base_unit(minor_amount_i64, currency)
+        // Amount formatting
+        utils::get_amount_as_f64(currency_unit, amount, currency)
+        // String conversion
+        StringMinorUnit::from(amount_i64)
+    amount_convertor_context: Be careful with MinorUnit vs StringMajorUnit conversions and make sure you understand the context of AmountConvertor.
+common_request_transformations:
+  - title: Payment Request Structure
+    code: |
+      pub struct ConnectorPaymentsRequest {
+          // Common fields across connectors
+          amount: AmountType,
+          currency: Currency,
+          payment_method: PaymentMethodDetails,
+          reference: String, // connector_request_reference_id
+          return_url: Option<String>,
+          
+          // Connector-specific fields
+          merchant_account: Option<String>,
+          browser_info: Option<BrowserInfo>,
+          billing_address: Option<Address>,
+          metadata: Option<HashMap<String, Value>>,
+      }
+  - title: Cancel Request Structure
+    code: |
+      pub struct ConnectorCancelRequest {
+          // Use PaymentsCancelData, not PaymentsCaptureData for cancel operations
+          transaction_id: String, // connector_transaction_id
+          cancellation_reason: Option<String>,
+          // Connector-specific fields
+      }
+  - title: Payment Method Types
+    code: |
+      pub enum PaymentMethodDetails {
+          Card(CardDetails),
+          Wallet(WalletDetails),
+          BankRedirect(BankRedirectDetails),
+          BankDebit(BankDebitDetails),
+          PayLater(PayLaterDetails),
+          Mandate(MandateDetails),
+      }
+    card_details:
+      code: |
+        pub struct CardDetails {
+            number: cards::CardNumber, // Hyperswitch type
+            expiry_month: Secret<String>,
+            expiry_year: Secret<String>,
+            cvc: Secret<String>,
+            card_holder_name: Secret<String>,
+        }
+      type_mismatch_note: Hyperswitch uses CardNumber but many connectors expect Secret<String>
+    wallet_types:
+      - GooglePay → Base64 token or structured data
+      - ApplePay → Token or decrypted card data
+      - PayPal → Success/cancel URLs
+      - Others: AliPay, MBWay, SamsungPay
+    bank_redirects:
+      - iDEAL, Sofort, EPS, Giropay
+      - Each may require issuer/bank selection
+common_response_transformations:
+  - title: Payment Response Structure
+    code: |
+      pub struct ConnectorPaymentsResponse {
+          id: String, // Connector transaction ID
+          status: ConnectorStatus,
+          amount: Option<AmountType>,
+          currency: Option<Currency>,
+          
+          // Optional fields
+          redirect_url: Option<String>,
+          reference_id: Option<String>,
+          mandate_reference: Option<String>,
+          network_transaction_id: Option<String>,
+          error_details: Option<ErrorInfo>,
+      }
+  - title: Status Mappings
+    payment_status_mapping_pattern:
+      title: Payment Status Mapping Pattern
+      mappings:
+        - "Connector Status → Hyperswitch AttemptStatus"
+        - '"succeeded/approved/captured" → Charged'
+        - '"authorized" → Authorized (if manual capture) or Charged (if auto)'
+        - '"failed/declined/refused" → Failure'
+        - '"pending/processing" → Pending'
+        - '"requires_action/3ds_required" → AuthenticationPending'
+        - '"cancelled/voided" → Voided'
+    refund_status_mapping:
+      title: Refund Status Mapping
+      mappings:
+        - "Connector Status → Hyperswitch RefundStatus"
+        - '"succeeded/completed" → Success'
+        - '"failed/declined" → Failure'
+        - '"pending/processing" → Pending'
+  - title: Response ID Types
+    code: |
+      pub enum ResponseId {
+          ConnectorTransactionId(String),
+          EncodedData(String),
+          NoResponseId,
+      }
+special_flow_transformations:
+  - title: 3D Secure (3DS)
+    request:
+      code: |
+        pub struct ThreeDSecureData {
+            browser_info: BrowserInfo,
+            return_url: String,
+            // Connector-specific 3DS fields
+        }
+    response:
+      code: |
+        pub struct ThreeDSecureResponse {
+            redirect_url: String,
+            redirect_form: Option<RedirectForm>,
+            session_data: Option<String>, // Stored in metadata
+        }
+  - title: Mandate/Tokenization
+    setup:
+      code: |
+        pub struct SetupMandateRequest {
+            customer_id: String,
+            payment_method: PaymentMethodData,
+            validation_mode: Option<String>,
+        }
+    usage:
+      code: |
+        pub struct MandatePaymentInfo {
+            mandate_id: String, // connector_mandate_id
+            original_amount: Option<i64>,
+        }
+  - title: Webhook Events
+    mappings:
+      - "WebhookEventType → IncomingWebhookEvent"
+      - '"payment.authorized" → PaymentIntentSuccess'
+      - '"payment.captured" → PaymentIntentSuccess'
+      - '"refund.succeeded" → RefundSuccess'
+      - '"dispute.created" → DisputeOpened'
+key_type_locations_in_hyperswitch:
+  - title: From hyperswitch_domain_models
+    types:
+      - `router_data::RouterData` - Main data carrier
+      - `router_request_types::{PaymentsAuthorizeData, RefundsData}`
+      - `router_response_types::{PaymentsResponseData, RefundsResponseData}`
+      - `payment_method_data::{PaymentMethodData, Card, WalletData}`
+  - title: From common_utils
+    types:
+      - `pii::{Email, Secret}` - Sensitive data handling
+      - `types::{MinorUnit, StringMinorUnit}` - Amount types
+      - `request::{RequestContent, Method}` - HTTP request building
+  - title: From api_models/common_enums
+    types:
+      - `enums::{AttemptStatus, RefundStatus, Currency}`
+      - `payments::{PaymentMethodType, PaymentMethod}`
+      - `webhooks::{IncomingWebhookEvent, ObjectReferenceId}`
+transformation_patterns:
+  - title: TryFrom Pattern (Avoiding Orphan Rule)
+    code: |
+      // Always use ResponseRouterData wrapper
+      impl TryFrom<ResponseRouterData<F, ConnectorResp, Req, HyperswitchResp>>
+          for RouterData<F, Req, HyperswitchResp>
+      {
+          fn try_from(item: ResponseRouterData<...>) -> Result<Self, Error> {
+              Ok(Self {
+                  status: map_status(item.response.status),
+                  response: Ok(HyperswitchResp {
+                      resource_id: ResponseId::ConnectorTransactionId(item.response.id),
+                      // Map other fields
+                  }),
+                  ..item.data // Spread original RouterData
+              })
+          }
+      }
+  - title: Payment Method Transformation
+    code: |
+      match payment_method_data {
+          PaymentMethodData::Card(card) => {
+              ConnectorCard {
+                  number: card.card_number,
+                  exp_month: card.card_exp_month,
+                  exp_year: format_expiry_year(card.card_exp_year),
+                  cvv: card.card_cvc,
+              }
+          }
+          PaymentMethodData::Wallet(wallet) => match wallet {
+              WalletData::GooglePay(gpay) => // Handle Google Pay token
+              WalletData::ApplePay(apple) => // Handle Apple Pay token
+              _ => Err(NotImplemented("wallet type"))
+          }
+          PaymentMethodData::BankRedirect(bank) => // Handle bank redirects
+          _ => Err(NotImplemented("payment method"))
+      }
+  - title: Address Transformation
+    code: |
+      // Hyperswitch Address → Connector Address
+      Address {
+          first_name: address.get_first_name()?,
+          last_name: address.get_last_name()?,
+          line1: address.get_line1()?,
+          city: address.get_city()?,
+          state: address.get_state()?,
+          zip: address.get_zip()?,
+          country: address.get_country()?,
+      }
+  - title: Error Response Transformation
+    connector_error_response:
+      code: |
+        pub struct ConnectorErrorResponse {
+            code: String,
+            message: String,
+            reason: Option<String>,
+        }
+    current_error_response_struct:
+      code: |
+        pub struct ErrorResponse {
+            pub code: String,
+            pub message: String,
+            pub reason: Option<String>,
+            pub status_code: u16,
+            pub attempt_status: Option<common_enums::enums::AttemptStatus>,
+            pub connector_transaction_id: Option<String>,
+            pub network_decline_code: Option<String>,
+            pub network_advice_code: Option<String>,
+            pub network_error_message: Option<String>,
+        }
+    transformation_to_hyperswitch:
+      code: |
+        ErrorResponse {
+            status_code: res.status_code,
+            code: error.code,
+            message: error.message.clone(),
+            reason: error.reason,
+            attempt_status: Some(AttemptStatus::Failure),
+            connector_transaction_id: None,
+            network_decline_code: None,
+            network_advice_code: None,
+            network_error_message: None,
+        }
+connector_specific_patterns:
+  - title: Two-Step Flows (e.g., Airwallex)
+    steps:
+      - "PreProcessing: Create payment intent → Returns intent_id"
+      - "Authorize: Confirm payment using intent_id"
+  - title: SOAP/XML Connectors (e.g., Bambora APAC)
+    points:
+      - Serialize to XML strings
+      - Parse XML responses to structs
+      - Handle nested SOAP envelopes
+  - title: Split Payments (e.g., Adyen)
+    points:
+      - Additional `splits` field in requests
+      - Split data in responses
+  - title: Instant Payments (e.g., Adyenplatform)
+    points:
+      - Priority field mapping
+      - Real-time status tracking
+common_enums:
+  - title: Currency Units
+    code: |
+      pub enum CurrencyUnit {
+          Minor, // Amounts in cents
+          Base,  // Amounts in dollars
+      }
+  - title: Capture Methods
+    code: |
+      match capture_method {
+          CaptureMethod::Automatic => "Sale",
+          CaptureMethod::Manual => "Authorization",
+      }
+  - title: Payment Flows
+    code: |
+      pub enum PaymentFlow {
+          Authorize,
+          Capture,
+          Void,
+          PSync,    // Payment status sync
+          RSync,    // Refund status sync
+          Execute,  // Complete payment
+          Preprocessing, // Setup before payment
+      }
+best_practices:
+  - Type Safety: Use `Secret<T>` for sensitive data
+  - Amount Handling: Always verify currency unit expectations
+  - Status Mapping: Consider capture method when mapping statuses
+  - Error Context: Preserve connector error details
+  - Metadata Storage: Use for flow-specific data (3DS sessions, etc.)
+  - Null Handling: Use `Option<T>` for optional fields
+  - String Formatting: Match connector's expected formats (dates, amounts)
+quick_reference:
+  - title: Required Imports for Transformers
+    code: |
+      use common_utils::{
+          ext_traits::ByteSliceExt,
+          pii::{Email, Secret},
+          types::{MinorUnit, StringMinorUnit},
+      };
+      use hyperswitch_domain_models::{
+          payment_method_data::{Card, PaymentMethodData, WalletData},
+          router_data::RouterData,
+          router_request_types::PaymentsAuthorizeData,
+          router_response_types::PaymentsResponseData,
+      };
+      use crate::types::{ResponseRouterData, ResponseId};
+conclusion: This guide provides a comprehensive overview of type transformations across all connectors, making it easier to implement new connectors or debug existing ones.

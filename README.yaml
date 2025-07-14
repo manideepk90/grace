@@ -1,0 +1,65 @@
+title: Global Rapid Agentic Connector Exchange (GRACE)
+description: GRACE is a system designed to streamline the integration of new payment connectors into the Hyperswitch ecosystem. It provides a structured, step-by-step process to ensure that connectors are added accurately and efficiently.
+overview:
+  title: Overview
+  description: The core of GRACE is a comprehensive guide that details the entire connector integration process. This guide, located at `grace/guides/connector_integration_guide.yaml`, provides a reusable framework for developers to follow.
+key_concepts:
+  title: Key Concepts
+  flows:
+    title: Flows
+    description: GRACE defines a series of "flows" that represent the different stages of a payment transaction. These flows include
+    items:
+      - preprocessing_flow
+      - tokenization_flow
+      - authorize_flow
+      - cancel_flow
+      - capture_flow
+      - psync_flow
+      - access_token_flow
+      - refund
+      - rsync
+    conclusion: Each flow corresponds to a specific action or set of actions that a connector must be able to handle.
+  integration_process:
+    title: Integration Process
+    description: The integration process is broken down into several key steps
+    steps:
+      - title: Preparation
+        description: This initial step involves creating a technical specification and a detailed integration plan for the new connector. Templates for these documents can be found in `grace/connector_integration/template/`.
+        templates:
+          - file: tech_spec.yaml
+            description: Outlines the technical details of the connector.
+          - file: planner_steps.yaml
+            description: Provides a step-by-step plan for the integration.
+      - title: Implementation
+        description: Following the plan created in the preparation phase, the developer implements the necessary code to integrate the connector into Hyperswitch. This involves implementing the various flows and data transformations required for the connector to function correctly.
+      - title: Testing
+        description: Once the implementation is complete, the new connector must be thoroughly tested to ensure that it functions as expected.
+usage:
+  title: Usage
+  description: To integrate a new connector using GRACE, you will need to use an AI model that has the capability to read, write, and execute commands. Follow these steps
+  steps:
+    - step: 1
+      instruction: "Clone the Hyperswitch repository:"
+      command: "git clone https://github.com/juspay/hyperswitch.git"
+    - step: 2
+      instruction: "Navigate to the Hyperswitch directory:"
+      command: "cd hyperswitch"
+    - step: 3
+      instruction: "Clone the GRACE repository:"
+      command: "git clone https://github.com/manideepk90/grace.git"
+    - step: 4
+      instruction: "Prompt the AI model:"
+      command: "integrate [ConnectorName] using .gracerules"
+      note: "Replace [ConnectorName] with the name of the connector you want to integrate."
+    - step: 5
+      instruction: "Review and Confirm:"
+      description: The AI model will create a technical specification and an implementation plan. You will be asked to review these documents. You can either approve the plan or suggest modifications. Once the plan is approved, the AI model will proceed with the integration.
+getting_started:
+  title: Getting Started
+  description: To begin integrating a new connector, please refer to the following resources
+  resources:
+    - title: Connector Integration Guide
+      path: grace/guides/connector_integration_guide.yaml
+    - title: Integration Templates
+      path: grace/connector_integration/template/
+  conclusion: These resources provide all the information and tools necessary to successfully integrate a new payment connector into the Hyperswitch system.
