@@ -1,0 +1,165 @@
+title: Connector Errors - AI Debugging Guide
+sections:
+  - title: Import & Module Errors
+    errors:
+      - code: E0432
+        name: Unresolved Import
+        pattern: "unresolved import / no X in module Y"
+        fix: "Check correct module path or add missing dependency to Cargo.toml"
+        common_paths:
+          - "Type aliases: Use `crate::types::TypeName` instead of direct paths"
+          - "External crates: Add to `[dependencies]` in Cargo.toml"
+          - "Common paths:"
+          - "  - `hyperswitch_interfaces::consts` for constants (NO_ERROR_CODE)"
+          - "  - `crate::utils` for traits and type aliases"
+          - "  - `hyperswitch_domain_models::types` for domain types"
+          - "  - `api_models` is separate crate, not in `hyperswitch_interfaces`"
+          - "  - `common_utils::id_type` not `hyperswitch_domain_models::id_type`"
+          - "  - Missing import: `base64::Engine` for base64 encoding operations"
+          - "  - Missing import: `crate::utils::ExtTraits` for extended trait functionality"
+          - "  - Missing import: `crate::utils::RefundsRequestData` for refund operations"
+          - "  - Use `RouterData` from `hyperswitch_domain_models::router_data::RouterData`, not from other modules"
+      - code: E0405/E0412
+        name: Type/Trait Not Found
+        pattern: "cannot find type/trait X in scope"
+        fix: "Import from correct module:"
+        modules:
+          - "`RouterData`: `hyperswitch_domain_models::router_data::RouterData`"
+          - "`Flow types`: `hyperswitch_interfaces::api::{Authorize, PSync, Capture, Execute, RSync}`"
+          - "`Request types`: `hyperswitch_domain_models::router_request_types::{PaymentsAuthorizeData, RefundsData}`"
+          - "`Traits`: `hyperswitch_interfaces::types::{Capturable, Refundable}`"
+          - "`ConnectorTransactionIdType`: `hyperswitch_domain_models::types`"
+      - code: E0433
+        name: Failed to Resolve
+        pattern: "could not find X in Y"
+        fix: "Module doesn't exist where expected"
+        example: "`api_models` is not in `hyperswitch_interfaces`, import directly"
+  - title: Method & Field Errors
+    errors:
+      - code: E0599
+        name: Method Not Found
+        pattern: "no method named X found"
+        fix: "Import required trait:"
+        traits:
+          - "Address methods: `use crate::utils::AddressDetailsData` (get_full_name, get_country)"
+          - "RouterData methods: `use crate::utils::RouterData as _` (get_webhook_url, get_email_for_connector)"
+          - "Request data methods: `use crate::utils::{PaymentsAuthorizeRequestData, RefundsRequestData}`"
+          - "Parse methods: `use common_utils::ext_traits::ByteSliceExt`"
+          - "String masking: `use masking::PeekInterface` (use `peek()` not `expose()` on references)"
+          - "Amount methods: `get_amount_as_i64()` on MinorUnit/StringMinorUnit"
+          - "Incorrect function name: Use `get_ip_address_as_optional()` not `get_optional_ip()`"
+      - code: E0609
+        name: Field Not Found
+        pattern: "no field X on type Y"
+        fix:
+          - "For `RouterData` in `TryFrom`: Access via `item.response.field` not `item.field`"
+          - "For `ResponseRouterData`: Use `item.data` for original RouterData, `item.response` for response"
+      - code: E0624
+        name: Private Function/Method
+        pattern: "associated function is private"
+        fix: "Use public constructors"
+        example: "`StringMinorUnit`: Use `From<i64>` or `From<&str>`, not private `new()`"
+  - title: Type Mismatch Errors
+    errors:
+      - code: E0308
+        name: Type Mismatch
+        common_cases:
+          - "`Email` vs `Secret<String, EmailStrategy>`: Use `get_email_for_connector()` on RouterData"
+          - "`Box<Option<T>>` expected: Wrap with `Box::new(Option<T>)`"
+          - "`HashMap<String, String>` vs `Map<String, Value>`: Convert JSON values to strings"
+          - "Amount types: Use consistent `i64` for minor units or proper conversion functions"
+          - "`MinorUnit` vs `StringMinorUnit`: Convert with `StringMinorUnit::from(amount.get_amount_as_i64().to_string())`"
+      - code: E0277
+        name: Trait Bound Not Satisfied
+        common_missing_traits:
+          - "`Serialize`: Add `#[derive(serde::Serialize)]`"
+          - "`Default`: Add `#[derive(Default)]` or `#[default]` variant for enums"
+          - "`ErasedMaskSerialize`: Ensure struct derives `Serialize`"
+          - "Orphan rule: Use `crate::types::ResponseRouterData` wrapper for `TryFrom` implementations"
+          - "`Display` for ResponseId: Use `get_connector_transaction_id()` to get String"
+      - code: E0117
+        name: Orphan Rule Violation
+        pattern: "only traits defined in the current crate can be implemented"
+        fix: "Use `crate::types::ResponseRouterData` wrapper in TryFrom implementations"
+      - code: E0107
+        name: Wrong Number of Generic Arguments
+        pattern: "type alias takes X generic arguments but Y were supplied"
+        fix: "Check type alias definition and match generic count"
+      - code: E0063
+        name: Missing Fields
+        pattern: "missing fields in initializer"
+        fix: "Provide all required fields or set optional ones to `None`"
+  - title: Connector-Specific Patterns
+    patterns:
+      - title: RequestContent Variants
+        variants:
+          - "Empty body: `RequestContent::Empty` (not `None` or `NoContent`)"
+          - "JSON: `RequestContent::Json(Box::new(serializable_struct))`"
+          - "Form: `RequestContent::FormUrlEncoded(HashMap<String, String>)`"
+          - "For signature with empty body: `RequestContent::Json(serde_json::Value::Null)`"
+      - title: Amount Handling
+        points:
+          - "Use `CurrencyUnit::Minor` with `i64` amounts"
+          - "`StringMinorUnit`: Use public `From` implementations, not private `new()`"
+          - "Convert via `get_amount_as_i64()` when needed"
+          - "For major units: Use utility functions from `crate::utils`"
+      - title: Response Handling
+        points:
+          - "Use `parse_struct::<T>()` on byte responses (requires `ByteSliceExt`)"
+          - "Handle `Result` types before accessing fields"
+          - "For redirects: Convert form fields to `HashMap<String, String>`"
+          - "ResponseId to String: Use `get_connector_transaction_id()`"
+      - title: Authentication
+        points:
+          - "Test errors: Set `CONNECTOR_AUTH_FILE_PATH` environment variable"
+          - "Point to valid auth TOML with connector credentials"
+  - title: Common Type Locations
+    locations:
+      - title: Request/Response Types
+        types:
+          - "`PaymentsAuthorizeData`: `hyperswitch_domain_models::router_request_types`"
+          - "`PaymentsResponseData`: `hyperswitch_domain_models::router_response_types`"
+          - "`RouterData`: `hyperswitch_domain_models::router_data`"
+          - "`ResponseRouterData`: `crate::types` (local wrapper)"
+          - "`AccessTokenResponseRouterData`: `hyperswitch_domain_models::types`"
+          - "`MandateReference`: `hyperswitch_domain_models::router_response_types`"
+      - title: Trait Locations
+        traits:
+          - "`ConnectorIntegration`: `hyperswitch_interfaces::api`"
+          - "`RouterRequest`: `hyperswitch_interfaces::api`"
+          - "Request data traits: `crate::utils`"
+          - "`AccessTokenAuthType`: `hyperswitch_interfaces::api::payments`"
+          - "`ResponseRouterDataCommon`: `hyperswitch_interfaces::types`"
+  - title: Build Pattern
+    patterns:
+      - title: Headers & Signatures
+        code: |
+          // For signature: serialize concrete struct to string
+          let request_str = serde_json::to_string(&concrete_struct)?;
+          // For body: box the struct
+          let request_content = RequestContent::Json(Box::new(concrete_struct));
+          // Use common_get_content_type() in build_request if get_headers is empty
+      - title: TryFrom Pattern
+        code: |
+          // Always use ResponseRouterData wrapper to avoid orphan rule
+          impl TryFrom<ResponseRouterData<F, ConnectorResp, Req, DomainResp>> 
+              for RouterData<F, Req, DomainResp>
+          where
+              Req: api::RouterRequest, // Add trait bounds if needed
+          {
+              fn try_from(item: ResponseRouterData<...>) -> Result<Self, Error> {
+                  Ok(Self {
+                      response: Ok(/* construct DomainResp from item.response */),
+                      ..item.data // spread original RouterData fields
+                  })
+              }
+          }
+  - title: Error Prevention
+    points:
+      - No XML tags or metadata in file content
+      - Import traits before using their methods
+      - Use correct enum variants (check actual definition)
+      - Handle Results before field access
+      - Check field location (response vs data) in transformers
+      - Remove duplicate imports (E0252)
+      - Provide type annotations when compiler can't infer (E0283)

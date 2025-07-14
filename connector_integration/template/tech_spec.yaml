@@ -1,0 +1,353 @@
+title: Expert Payment Systems Architect
+description: You are an expert payment systems architect tasked with creating detailed technical specifications for integrating payment connectors into Hyperswitch.
+goal: Your specifications will be used as direct input for code generation AI systems, so they must be precise, structured, and comprehensive.
+project_request:
+  tag: project_request
+  value: Integration of the {{connector_name}} connector to Hyperswitch
+project_rules:
+  tag: project_rules
+  rules:
+    # General Principles
+    - "1. Code Standards: Strictly follow existing connector patterns and maintain consistent code standards. Refer to `guides/patterns/patterns.yaml` for established patterns."
+    - "2. No Assumptions: Never assume implementation details. Always refer to the connector's official API documentation and the provided `tech_spec.md`."
+    - "3. Reusability: Prioritize reusing components. Utilize existing amount conversion utilities from `common_utils` and search for reusable functions in `utils.rs`."
+    - "4. Idempotency: Do not write redundant functions. Ensure that all operations are idempotent where possible."
+
+    # Type and Data Handling
+    - "5. Type Safety: Use `types.rs` in `hyperswitch_domain_models` for type definitions. Ensure all custom types are defined and imported correctly."
+    - "6. Type Name Integrity: Type names from the connector's documentation must be used *exactly* as they are. Do not modify, abbreviate, or add any characters to type names, even for clarification or based on past learnings. Maintain 1:1 mapping for all type names. [STRICT]"
+    - "7. API Types: Define connector-specific request/response types based on the API. Do not modify payloads; follow the full request/response struct from the documentation."
+    - "8. Data Usage: Prioritize using data from `RouterData` wherever possible to maintain consistency."
+    - "9. Security: Handle sensitive data like expiry month and CVV as `Secret<String>` or an equivalent secure type."
+    - "10. Serde Usage: Only modify `serde` renaming (`RENAME_ALL`) if required by the API. The renaming convention must be based on the request and response types."
+    - "11. Status Mapping: All status mappings must be implemented as enums for type safety and consistency."
+
+    # Implementation and Workflow
+    - "12. Boilerplate Generation: Use `add_connector.sh {{connector_name}} {{connector_base_url}}` for initial code."
+    - "13. File Organization: Move `.../{{connector_name}}/test.rs` to `crates/router/tests/connectors/{{connector_name}}.rs`."
+    - "14. Implementation: Complete all `todo!()` markers in the boilerplate code if needed or in the docs."
+    - "15. Build Process: Always use `cargo build` in the root folder. After every phase, run `cargo build` or `cargo check` and fix any resulting errors."
+    - "16. Plan Updates: Keep the `{{connector_name}}_plan.md` updated by marking completed steps."
+
+    # Financial and Configuration
+    - "17. Currency Handling: Use `majorunit` for dollars and `minorunits` for cents. Always ask for confirmation on the currency unit."
+    - "18. Configuration: In `production.toml`, use the `productionUrl` from the `tech-spec`."
+    - "19. Feature Matrix: For unsupported features, remove them or set to `false`. Search for patterns like `ExamplePay_SUPPORTED_PAYMENT_METHODS` to implement this."
+
+    # Debugging and Testing
+    - "20. Error Handling: Fix errors based on reference docs (`errors.yaml`, `types.yaml`), not just compiler suggestions."
+    - "21. Debugging: If stuck for more than three iterations, consult `learnings.yaml` or other connectors. Maintain context at all times."
+    - "22. Testing: Create Cypress tests for all implemented flows, following existing patterns."
+reference_docs:
+  tag: reference_docs
+  documents:
+    - document: grace/guides/types/types.yaml
+      purpose: Type definitions and data structures
+    - document: grace/guides/integrations/integrations.yaml
+      purpose: Connector implementation patterns
+    - document: grace/guides/learning/learning.yaml
+      purpose: Lessons from previous integrations
+    - document: grace/guides/patterns/patterns.yaml
+      purpose: Common implementation patterns
+    - document: grace/guides/errors/errors.yaml
+      purpose: Error handling strategies
+connector_information:
+  tag: connector_information
+  documents:
+    - document: grace/references/{{connector_name}}_doc_*.md
+      purpose: Connector-specific API documentation
+output_file:
+  tag: output_file
+  instruction: Store the result or plan in the grace/connector_integration/{{connector_name}}/{{connector_name}}_specs.md
+starter_template:
+  tag: starter_template
+  description: "After running `add_connector.sh`, the following structure will be created:"
+  structure: |
+    hyperswitch_connectors/src/connectors/
+    ├── {{connector_name}}/
+    │   └── transformers.rs    # Request/Response transformations
+    └── {{connector_name}}.rs   # Main connector implementation
+    Note: move the file crates/hyperswitch_connectors/src/connectors/{{connector_name}}/test.rs to crates/router/tests/connectors/{{connector_name}}.rs
+
+    crates/router/tests/connectors/
+    └── {{connector_name}}.rs   # Integration tests (moved from auto-generated location)
+specification_planning:
+  instruction: Your task is to generate a comprehensive technical specification based on this information.
+  analysis_instruction: Before creating the final specification, analyze the project requirements and plan your approach. Wrap your thought process in <specification_planning> tags, considering the following
+  areas:
+    - title: Connector API Analysis
+      points:
+        - Authentication mechanisms (API key, OAuth, etc.)
+        - Supported payment methods
+        - API endpoints and their purposes
+        - Request/Response formats (JSON, XML, Form-encoded)
+        - Required vs optional fields
+        - API versioning and headers
+    - title: Payment Flow Implementation
+      points:
+        - Authorization flow
+        - Capture flow (manual/automatic)
+        - Void/Cancel flow
+        - Refund flow (full/partial)
+        - Sync operations
+        - 3DS/Authentication flows if applicable
+    - title: Data Transformation Requirements
+      points:
+        - Currency and amount formatting
+        - Status mapping between connector and Hyperswitch
+        - Error code mapping
+        - Payment method data transformation
+        - Customer data handling
+        - Metadata field mapping
+    - title: Error Handling Strategy
+      points:
+        - API error responses
+        - Network errors
+        - Timeout handling
+        - Retry logic requirements
+        - Error message standardization
+    - title: Webhook Implementation
+      points:
+        - Supported webhook events
+        - Signature verification method
+        - Event to status mapping
+        - Resource identification
+    - title: Testing Requirements
+      points:
+        - Unit test scenarios
+        - Integration test coverage
+        - Mock response data
+        - Edge cases to cover
+  area_guidelines:
+    - List implementation requirements
+    - Identify potential challenges
+    - Note any connector-specific quirks
+    - Consider error scenarios
+technical_specification_template:
+  title: Technical Specification Template
+  instruction: After your analysis, generate the technical specification using the following markdown structure
+  template: |
+    # {{connector_name}} Connector Integration Technical Specification
+
+    ## 1. Connector Overview
+    ### 1.1. Basic Information
+    - **Connector Name**: `{{connector_name}}`
+    - **Description**: [Brief description of the connector and its services]
+    - **Website**: [Link to connector's main website]
+    - **API Documentation**: [Link to official API docs]
+
+    ### 1.2. Endpoints
+    - **Base URL (Sandbox/Test)**: `{{connector_base_url}}`
+    - **Base URL (Production)**: `{{connector_production_url}}`
+
+    ### 1.3. Supported Regions & Currencies
+    - **Supported Countries**: [List of supported ISO 3166-1 alpha-2 country codes]
+    - **Supported Currencies**: [List of supported ISO 4217 currency codes]
+    - **Currency Unit**: [Minor (e.g., cents) / Base (e.g., dollars)] - *Developer confirmation required*
+
+    ## 2. Authentication
+    ### 2.1. Authentication Method
+    - **Type**: [API Key / OAuth 2.0 / Bearer Token / HMAC Signature]
+    - **Credentials Required**: [List all required credentials, e.g., `api_key`, `api_secret`, `merchant_id`]
+
+    ### 2.2. Header Format
+    - **Format**: [e.g., `Authorization: Bearer {api_key}` or `X-API-KEY: {api_key}`]
+    - **Additional Headers**: [List any other required headers, e.g., `X-Version`, `Content-Type`]
+
+    ## 3. Supported Features
+    | Feature | Supported | Notes |
+    |---|---|---|
+    | Card Payments | ✓ / ✗ | [e.g., Visa, Mastercard, Amex] |
+    | Bank Transfers | ✓ / ✗ | [e.g., iDEAL, Sofort] |
+    | Wallets | ✓ / ✗ | [e.g., Google Pay, Apple Pay] |
+    | 3D Secure 2.0 | ✓ / ✗ | [Redirect or SDK-based] |
+    | Recurring Payments | ✓ / ✗ | [Tokenization, Mandates] |
+    | Partial Capture | ✓ / ✗ | |
+    | Multiple Captures | ✓ / ✗ | |
+    | Instant Refunds | ✓ / ✗ | |
+    | Partial Refunds | ✓ / ✗ | |
+    | Webhooks | ✓ / ✗ | |
+
+    ## 4. API Endpoints & Flows
+    ### 4.1. Payment Operations
+    | Operation | Method | Endpoint | Purpose |
+    |---|---|---|---|
+    | Create Payment | `POST` | `/v1/payments` | Create a payment intent |
+    | Capture Payment | `POST` | `/v1/payments/{id}/capture` | Capture an authorized payment |
+    | Cancel Payment | `POST` | `/v1/payments/{id}/cancel` | Void or cancel a payment |
+    | Get Payment | `GET` | `/v1/payments/{id}` | Retrieve payment status |
+
+    ### 4.2. Refund Operations
+    | Operation | Method | Endpoint | Purpose |
+    |---|---|---|---|
+    | Create Refund | `POST` | `/v1/refunds` | Initiate a refund |
+    | Get Refund | `GET` | `/v1/refunds/{id}` | Check refund status |
+
+    ### 4.3. Other Operations
+    [List any additional operations like tokenization, customer creation, etc.]
+
+    ## 5. Data Models & Transformations
+    ### 5.1. Request Structures
+    **Authorize Request:**
+    ```json
+    {
+      // Provide the actual request structure from the API docs
+      "amount": 1000,
+      "currency": "USD",
+      "payment_method": {},
+      // ... other fields
+    }
+    ```
+    **Capture Request:**
+    ```json
+    {
+      // ...
+    }
+    ```
+
+    ### 5.2. Response Structures
+    **Payment Response:**
+    ```json
+    {
+      // Provide the actual response structure from the API docs
+      "id": "pay_xxxxx",
+      "status": "succeeded",
+      // ... other fields
+    }
+    ```
+    **Error Response:**
+    ```json
+    {
+      "error": {
+        "code": "invalid_request",
+        "message": "Invalid card number",
+        "param": "card.number"
+      }
+    }
+    ```
+
+    ### 5.3. Status Mappings
+    | Connector Status | Hyperswitch Status | Description |
+    |---|---|---|
+    | `pending` | `Processing` | The payment is being processed. |
+    | `succeeded` | `Succeeded` | The payment completed successfully. |
+    | `failed` | `Failed` | The payment failed. |
+    | [Add all status mappings] | | |
+
+    ### 5.4. Error Code Mappings
+    | Connector Error Code | Hyperswitch Error | Description |
+    |---|---|---|
+    | `insufficient_funds` | `InsufficientFunds` | The card has insufficient funds. |
+    | [Add all error mappings] | | |
+
+    ## 6. Implementation Details
+    ### 6.1. Request Transformations
+    For each operation, specify required field mappings, optional field handling, data format conversions, and any special handling requirements.
+
+    **Authorize Request Transformation:**
+    ```rust
+    // Pseudo-code showing transformation logic
+    PaymentIntentRequest {
+        amount: req.amount, // Convert to minor units if necessary
+        currency: req.currency.to_string(),
+        payment_method: transform_payment_method(req.payment_method_data),
+        metadata: {
+            "order_id": req.payment_id,
+        },
+    }
+    ```
+
+    ### 6.2. Response Transformations
+    For each operation, specify status extraction and mapping, transaction ID handling, error response parsing, and any additional data extraction.
+
+    ### 6.3. Amount Handling
+    - **Format**: [Minor units / Major units]
+    - **Decimal Places**: [e.g., 2 for most currencies]
+    - **Zero Decimal Currencies**: [List if any, e.g., JPY]
+
+    ### 6.4. Payment Method Transformations
+    For each supported payment method, detail the transformation logic.
+    ```rust
+    // Card
+    card: {
+        number: payment_method_data.card.number,
+        exp_month: payment_method_data.card.exp_month,
+        exp_year: payment_method_data.card.exp_year,
+        cvc: payment_method_data.card.cvc,
+    }
+
+    // Bank Transfer
+    bank_transfer: {
+        // ... specific fields
+    }
+    ```
+
+    ## 7. Webhook Implementation
+    ### 7.1. Webhook Configuration
+    - **Endpoint Format**: `/webhooks/{{merchant_id}}/{{connector_name}}`
+    - **Signature Header**: [Header name for the signature, e.g., `X-Signature`]
+    - **Signature Algorithm**: [e.g., HMAC-SHA256, RSA]
+
+    ### 7.2. Supported Events
+    | Event Type | Hyperswitch Event | Description |
+    |---|---|---|
+    | `payment.succeeded` | `PaymentIntentSuccess` | A payment has been completed. |
+    | `payment.failed` | `PaymentIntentFailure` | A payment has failed. |
+    | [Add all relevant events] | | |
+
+    ### 7.3. Signature Verification
+    ```rust
+    // Pseudo-code for signature verification
+    fn verify_signature(payload: &[u8], signature: &str, secret: &str) -> Result<bool, Error> {
+        // ... implementation details
+    }
+    ```
+
+    ## 8. Testing Strategy
+    ### 8.1. Test Credentials
+    - **Test API Key**: [If provided]
+    - **Test Card Numbers**: [List of test card numbers for various scenarios]
+    - **Test Bank Accounts**: [If applicable]
+
+    ### 8.2. Test Scenarios
+    1. **Successful Payment Flow**: Create payment → Authorize → Capture.
+    2. **Failed Payment Scenarios**: Insufficient funds, invalid card, authentication required.
+    3. **Refund Scenarios**: Full refund, partial refund, failed refund.
+    4. **Edge Cases**: Timeout handling, duplicate requests, invalid currency.
+
+    ### 8.3. Integration Test Structure
+    ```rust
+    // Example test structure
+    #[test]
+    fn test_payment_create_success() {
+        // ... test implementation
+    }
+    ```
+
+    ## 9. Connector-Specific Considerations
+    ### 9.1. Quirks and Limitations
+    - [Any specific behavior to be aware of]
+    - [API limitations, e.g., rate limiting]
+    - [Regional restrictions]
+
+    ### 9.2. Best Practices
+    - [Recommended configurations]
+    - [Performance optimizations]
+    - [Security considerations]
+
+    ## 10. References
+    ### 10.1. External Documentation
+    - [Official API Documentation](link)
+    - [Integration Guide](link)
+    - [Webhook Documentation](link)
+
+    ### 10.2. Internal References
+    - **Similar Connectors**: [List similar connectors for reference]
+    - **Reusable Patterns**: [Specific files/modules to reference]
+important_notes:
+  - "DO NOT include generic software development sections like UI/UX, database schema, or analytics"
+  - "FOCUS on payment processing, API integration, and connector-specific implementation"
+  - "REFERENCE the actual connector API documentation for accurate field names and structures"
+  - "INCLUDE actual code snippets and examples where helpful"
+  - "BE SPECIFIC about data transformations and mappings"
+final_instruction: Ensure that your specification is extremely detailed and provides specific implementation guidance for the connector integration. Include concrete examples for complex transformations and clearly define the mapping between connector and Hyperswitch data structures.

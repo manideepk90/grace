@@ -4,7 +4,7 @@ GRACE is a system designed to streamline the integration of new payment connecto
 
 ## Overview
 
-The core of GRACE is a comprehensive guide that details the entire connector integration process. This guide, located at `grace/guides/connector_integration_guide.md`, provides a reusable framework for developers to follow.
+The core of GRACE is a comprehensive guide that details the entire connector integration process. This guide, located at `grace/guides/connector_integration_guide.yaml`, provides a reusable framework for developers to follow.
 
 ## Key Concepts
 
@@ -29,8 +29,8 @@ Each flow corresponds to a specific action or set of actions that a connector mu
 The integration process is broken down into several key steps:
 
 1.  **Preparation**: This initial step involves creating a technical specification and a detailed integration plan for the new connector. Templates for these documents can be found in `grace/connector_integration/template/`.
-    -   `tech_spec.md`: Outlines the technical details of the connector.
-    -   `planner_steps.md`: Provides a step-by-step plan for the integration.
+    -   `tech_spec.yaml`: Outlines the technical details of the connector.
+    -   `planner_steps.yaml`: Provides a step-by-step plan for the integration.
 
 2.  **Implementation**: Following the plan created in the preparation phase, the developer implements the necessary code to integrate the connector into Hyperswitch. This involves implementing the various flows and data transformations required for the connector to function correctly.
 
@@ -67,7 +67,7 @@ To integrate a new connector using GRACE, you will need to use an AI model that 
 
 To begin integrating a new connector, please refer to the following resources:
 
--   **Connector Integration Guide**: `grace/guides/connector_integration_guide.md`
+-   **Connector Integration Guide**: `grace/guides/connector_integration_guide.yaml`
 -   **Integration Templates**: `grace/connector_integration/template/`
 
 These resources provide all the information and tools necessary to successfully integrate a new payment connector into the Hyperswitch system.
