@@ -50,7 +50,7 @@ To integrate a new connector using GRACE, you will need to use an AI model that 
     ```
 3.  **Clone the GRACE repository**:
     ```bash
-    git clone https://github.com/manideepk90/grace.git
+    git clone https://github.com/juspay/grace.git
     ```
 4. **Adding Docs or Reference Docs for a Connector**
 To add reference documentation for a connector:
