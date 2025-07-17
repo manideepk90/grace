@@ -24,7 +24,7 @@ GRACE defines a series of "flows" that represent the different stages of a payme
 
 Each flow corresponds to a specific action or set of actions that a connector must be able to handle.
 
-### Integration Process
+## Integration Process
 
 The integration process is broken down into several key steps:
 
@@ -52,22 +52,39 @@ To integrate a new connector using GRACE, you will need to use an AI model that 
     ```bash
     git clone https://github.com/manideepk90/grace.git
     ```
-4.  **Prompt the AI model**:
+4. **Adding Docs or Reference Docs for a Connector**
+To add reference documentation for a connector:
+
+- Place the files under the following path: `grace/references/{{connector_name}}/`
+- Supported file formats:
+    - .md (Markdown)
+    - .yaml
+    - .json
+
+- For each flow (e.g., payment, refund, webhook handling, etc.), name the files as:
+  doc1.md, doc2.yaml, doc3.json, etc., depending on the content and format.
+
+> 📌 This structure helps keep documentation organized and accessible per connector and flow.
+
+5.  **Prompt the AI model**:
     Prompt the AI model with the following command:
     ```
     integrate [ConnectorName] using .gracerules
     ```
     Replace `[ConnectorName]` with the name of the connector you want to integrate.
 
-5.  **Review and Confirm**:
+6.  **Review and Confirm**:
     The AI model will create a technical specification and an implementation plan. You will be asked to review these documents. You can either approve the plan or suggest modifications. Once the plan is approved, the AI model will proceed with the integration.
 
+7. **Generate code**:
+    The Ai will generate the code for the connector, just follow and update the files if needed.
 
-## Getting Started
+# Model Selection
+To ensure high-quality integration planning and documentation generation, select a powerful and reliable AI model. Recommended models include:
+- Claude Opus (by Anthropic) — Excellent for long-context understanding and reasoning.
+- Claude Sonnet — Balanced in performance and speed for most tasks.
+- Gemini 2.5 Pro (by Google) — Strong code and planning capabilities, especially with structured prompts.
+> Choose a model with strong reasoning, planning, and multi-step instruction-following capabilities for best results during the integration phase.
 
-To begin integrating a new connector, please refer to the following resources:
 
--   **Connector Integration Guide**: `grace/guides/connector_integration_guide.md`
--   **Integration Templates**: `grace/connector_integration/template/`
 
-These resources provide all the information and tools necessary to successfully integrate a new payment connector into the Hyperswitch system.
